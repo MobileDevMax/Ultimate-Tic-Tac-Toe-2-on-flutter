@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(UltimateTicTacToe());
+}
+
+class UltimateTicTacToe extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Ultimate Tic Tac Toe',
+      home: GamePage(),
+    );
+  }
+}
+
+class GamePage extends StatefulWidget {
+  @override
+  _GamePageState createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage> {
+  List<List<List<String?>>> board =
+      List.generate(3, (_) => List.generate(3, (_) => List.filled(9, null)));
+  String currentPlayer = 'X';
+  bool gameWon = false;
+
+  void _playerMove(int row, int col, int subRow, int subCol) {
+    int index = subRow * 3 + subCol;
+    if (board[row][col][index] == null && !gameWon) {
+      setState(() {
+        board[row][col][index] = currentPlayer;
+        if (_checkWin(row, col)) {
+          gameWon = true;
+        } else {
+          currentPlayer = currentPlayer == 'X' ? 'O' : 'X';
+        }
+      });
+    }
+  }
+
+  bool _checkWin(int row, int col) {
+    List<String?> smallBoard = board[row][col];
+
+    for (int i = 0; i < 3; i++) {
+      if (smallBoard[i * 3] == currentPlayer &&
+          smallBoard[i * 3 + 1] == currentPlayer &&
+          smallBoard[i * 3 + 2] == currentPlayer) {
+        return true;
+      }
+    }
+
+    for (int i = 0; i < 3; i++) {
+      if (smallBoard[0 + i] == currentPlayer &&
+          smallBoard[3 + i] == currentPlayer &&
+          smallBoard[6 + i] == currentPlayer) {
+        return true;
+      }
+    }
+
+    if ((smallBoard[0] == currentPlayer &&
+            smallBoard[4] == currentPlayer &&
+            smallBoard[8] == currentPlayer) ||
+        (smallBoard[2] == currentPlayer &&
+            smallBoard[4] == currentPlayer &&
+            smallBoard[6] == currentPlayer)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Ultimate Tic Tac Toe')),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (int i = 0; i < 3; i++)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (int j = 0; j < 3; j++) _buildSmallGrid(i, j),
+              ],
+            ),
+          if (gameWon)
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                '$currentPlayer won!',
+                style: TextStyle(fontSize: 24, color: Colors.green),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  board = List.generate(
+                      3, (_) => List.generate(3, (_) => List.filled(9, null)));
+                  currentPlayer = 'X';
+                  gameWon = false;
+                });
+              },
+              child: Text('Reset game'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallGrid(int row, int col) {
+    return Container(
+      margin: EdgeInsets.all(5),
+      child: Column(
+        children: [
+          for (int subRow = 0; subRow < 3; subRow++)
+            Row(
+              children: [
+                for (int subCol = 0; subCol < 3; subCol++)
+                  _buildSmallCell(row, col, subRow, subCol),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallCell(int row, int col, int subRow, int subCol) {
+    int index = subRow * 3 + subCol;
+    return GestureDetector(
+      onTap: () => _playerMove(row, col, subRow, subCol),
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          border: Border.all(),
+          color: Colors.white,
+        ),
+        child: Center(
+          child: Text(
+            board[row][col][index] ?? '',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+    );
+  }
+}
